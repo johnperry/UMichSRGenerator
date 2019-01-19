@@ -1,0 +1,20 @@
+<TemplateDefinitions>
+
+	<Components>
+
+		<Processor>
+			<attr name="name" required="yes" default="UMichSRGenerator"/>
+			<attr name="class" required="yes" default="edu.umich.ctp.UMichSRGenerator" editable="no"/>
+			<attr name="root" required="yes" default="roots/UMichSRGenerator"/>
+			<attr name="dicomScript" required="no"  default=""/>
+			<attr name="prefix" required="yes" default="9999">
+				<helptext>The prefix to be used in SOPInstanceUIDs for SR objects.</helptext>
+			</attr>
+			<attr name="dicomScript" required="no"  default=""/>
+			<attr name="quarantine" required="yes" default="quarantines/UMichSRGenerator"/>
+		</Processor>
+
+	</Components>
+
+</TemplateDefinitions>
+
