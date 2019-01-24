@@ -123,7 +123,7 @@ public class UMichSRGenerator extends AbstractPipelineStage implements Processor
 			srDS.getFileMetaInfo().putUI(Tags.TransferSyntaxUID, transferSyntaxUID);
 
 			//Set the SOPClass
-			String sopClassUID = UIDs.BasicTextSR;
+			String sopClassUID = UIDs.EnhancedSR;
 			srDS.putUI( Tags.SOPClassUID, sopClassUID);
 			
 			//Create a new SOPInstanceUID
@@ -191,10 +191,12 @@ public class UMichSRGenerator extends AbstractPipelineStage implements Processor
 
 				String diameter = dobDS.getString(Tags.ReconstructionDiameter);
 				if ((diameter != null) && !diameter.trim().equals("")) {
-					double diam = Float.parseFloat(diameter.trim()) / 10.0;
-					String d = String.format("%.1f cm", diam);
+					long diam = Math.round(Float.parseFloat(diameter.trim()) / 10.0);
+					//String d = String.format("%.1f cm", diam);
 					//note: using DCM code for Reconstruction Algorithm
-					addContentSeqItem(cs, "TEXT", "113961", "DCM", "Reconstruction Diameter", Tags.TextValue, d);
+					addContentSeqItem(cs, "NUM", "113961", "DCM", "Reconstruction Diameter", 
+										"cm", "UCUM", "cm",
+										Tags.NumericValue, Long.toString(diam));
 				}
 
 			//Write the dataset to a file in the root directory
@@ -231,6 +233,42 @@ public class UMichSRGenerator extends AbstractPipelineStage implements Processor
 				}
 				cncsDS.putLO(Tags.CodeMeaning, codeMeaning);
 			csDS.putXX(valueTag, value);
+	}
+	
+	private void addContentSeqItem(
+					DcmElement contentSeqElement,
+					String valueType,
+					String codeValue,
+					String codingSchemeDesignator,
+					String codeMeaning,
+					String measurementValueCode,
+					String measurementCodingSchemeDesignator,
+					String measurementValueTypeCodeName,
+					int valueTag,
+					String value) {
+						
+		Dataset csDS = objectFactory.newDataset();
+		contentSeqElement.addItem(csDS);
+			csDS.putCS(Tags.RelationshipType, "CONTAINS");
+			csDS.putCS(Tags.ValueType, valueType);
+			DcmElement conceptNameCodeSeq = csDS.putSQ(Tags.ConceptNameCodeSeq);
+			Dataset cncsDS = objectFactory.newDataset();
+			conceptNameCodeSeq.addItem(cncsDS);
+				if (!codeValue.equals("")) {
+					cncsDS.putSH(Tags.CodeValue, codeValue);
+					cncsDS.putSH(Tags.CodingSchemeDesignator, codingSchemeDesignator);
+				}
+				cncsDS.putLO(Tags.CodeMeaning, codeMeaning);
+			DcmElement measuredValueSeq = csDS.putSQ(Tags.MeasuredValueSeq);
+			Dataset mvsDS = objectFactory.newDataset();
+			measuredValueSeq.addItem(mvsDS);
+				DcmElement measurementUnitsCodeSeq = mvsDS.putSQ(Tags.MeasurementUnitsCodeSeq);
+				Dataset mucsDS = objectFactory.newDataset();
+				measurementUnitsCodeSeq.addItem(mucsDS);
+					mucsDS.putSH(Tags.CodeValue, measurementValueCode);
+					mucsDS.putSH(Tags.CodingSchemeDesignator, measurementCodingSchemeDesignator);
+					mucsDS.putLO(Tags.CodeMeaning, measurementValueTypeCodeName);
+				mvsDS.putXX(valueTag, value);
 	}			
 		
 }
